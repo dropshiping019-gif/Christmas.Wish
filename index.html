@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Christmas Wish For You</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Mountains+of+Christmas:wght@700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- RESET & BASIC SETUP --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            height: 100vh;
+            font-family: 'Mountains of Christmas', cursive;
+            overflow: hidden; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        /* --- SNOWFALL EFFECT --- */
+        .snowflake {
+            position: absolute;
+            top: -10px;
+            color: #fff;
+            animation: fall linear infinite;
+            z-index: 1;
+            pointer-events: none; /* Fix: Snow won't block clicks */
+        }
+        @keyframes fall {
+            to { transform: translateY(110vh); }
+        }
+
+        /* --- SCREENS (PAGES) MANAGEMENT --- */
+        .screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.8s ease-in-out;
+            opacity: 0;
+            pointer-events: none; /* Invisible screens can't be clicked */
+            transform: scale(0.8);
+            z-index: 0;
+        }
+        
+        /* FIX: Active screen gets high z-index to ensure buttons work */
+        .screen.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: scale(1);
+            z-index: 100; 
+        }
+
+        /* --- SCREEN 1: THE BUTTON --- */
+        .start-btn {
+            padding: 20px 50px;
+            font-size: 2rem;
+            background-color: #c0392b;
+            color: white;
+            border: 4px solid #f1c40f;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 20px #f1c40f;
+            font-family: 'Mountains of Christmas', cursive;
+            transition: transform 0.3s;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            position: relative;
+            z-index: 101; /* Extra layer to ensure clickability */
+        }
+        .start-btn:hover {
+            transform: scale(1.1);
+            background-color: #e74c3c;
+        }
+        .decor { font-size: 3rem; margin: 10px; }
+
+        /* --- SCREEN 2: THE SHAKING GIFT --- */
+        .gift-container {
+            text-align: center;
+            cursor: pointer;
+            z-index: 101;
+        }
+        .gift-box {
+            font-size: 8rem;
+            animation: shake 1s infinite;
+            display: inline-block;
+        }
+        .click-text {
+            margin-top: 20px;
+            font-size: 2rem;
+            color: #f1c40f;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes shake {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(5deg); }
+            50% { transform: rotate(0deg); }
+            75% { transform: rotate(-5deg); }
+            100% { transform: rotate(0deg); }
+        }
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        /* --- SCREEN 3: THE ENVELOPE --- */
+        .envelope-wrapper {
+            position: relative;
+            width: 90vw;
+            max-width: 600px;
+            height: 450px;
+            margin-top: 50px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .envelope {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            background: #c0392b;
+            border-radius: 0 0 10px 10px;
+            z-index: 20;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+        
+        .envelope::before { /* The Flap */
+            content: '';
+            position: absolute;
+            top: 0;
+            width: 0;
+            height: 0;
+            border-left: 150px solid transparent;
+            border-right: 150px solid transparent;
+            border-top: 100px solid #e74c3c;
+            transform-origin: top;
+            transition: transform 0.6s ease;
+            z-index: 25;
+        }
+
+        .heart { /* The Seal */
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            color: #f1c40f;
+            cursor: pointer;
+            z-index: 30;
+            transition: all 1s ease;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .instruction {
+            margin-bottom: 250px;
+            font-size: 1.8rem;
+        }
+
+        .letter {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            height: 100%;
+            background: #fff8dc;
+            color: #333;
+            padding: 20px;
+            text-align: center;
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.2rem;
+            border-radius: 5px;
+            z-index: 15;
+            transition: bottom 1s ease, transform 1s ease;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* --- ANIMATION STATES --- */
+        .envelope-wrapper.open .envelope::before {
+            transform: rotateX(180deg);
+            z-index: 10;
+        }
+        .envelope-wrapper.open .heart {
+            transform: translate(-50%, -200px) scale(1.5);
+            opacity: 0;
+        }
+        .envelope-wrapper.open .letter {
+            bottom: 50px;
+            transform: translateX(-50%) translateY(-50px) scale(1.1);
+            height: 350px;
+            z-index: 40;
+        }
+
+        /* --- NEW BUTTON (Left of Envelope) --- */
+        .hidden-btn {
+            position: absolute;
+            left: -120px; /* Positioned to the left */
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 10px 20px;
+            background: #222;
+            color: #fff;
+            border: 1px solid white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Dancing Script', cursive;
+            opacity: 0; 
+            transition: opacity 1s ease;
+            z-index: 50;
+            pointer-events: none; /* Not clickable until visible */
+        }
+        
+        .envelope-wrapper.open .hidden-btn {
+            opacity: 1;
+            pointer-events: all; /* Now clickable */
+        }
+
+        /* Responsive adjustment for mobile: move button below if screen is small */
+        @media (max-width: 800px) {
+            .hidden-btn {
+                left: 50%;
+                top: 110%; /* Move below the envelope */
+                transform: translateX(-50%);
+                width: 150px;
+            }
+        }
+
+        /* --- SCREEN 4: APOLOGY --- */
+        #screen4 {
+            background: radial-gradient(circle at center, #4a0000, #000000);
+            overflow: hidden;
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            padding: 20px;
+        }
+
+        .sorry-text {
+            color: rgba(255, 255, 255, 0.6);
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 5px;
+            animation: fadeIn 0.1s ease;
+        }
+
+        .particle {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 10px;
+            height: 10px;
+            background-color: #ff0000;
+            border-radius: 50%;
+            animation: explode 1.5s ease-out forwards;
+        }
+
+        @keyframes explode {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+        }
+
+        .final-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            color: #ff4d4d;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 2s ease;
+            z-index: 100;
+            background: rgba(0,0,0,0.9);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid #ff4d4d;
+            font-family: 'Dancing Script', cursive;
+            width: 80%;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="screen1" class="screen active">
+        <h1 class="decor">🎄 ✨ 🎄</h1>
+        <button class="start-btn" onclick="goToScreen(2)">Start</button>
+        <h1 class="decor">❄️ 🎅 ❄️</h1>
+    </div>
+
+    <div id="screen2" class="screen">
+        <h1 style="font-size: 2.5rem; margin-bottom: 20px; padding: 20px; text-align: center;">May your Christmas sparkle with moments of love, laughter, and goodwill.</h1>
+        <div class="gift-container" onclick="goToScreen(3)">
+            <div class="gift-box">🎁</div>
+            <div class="click-text">Click Here</div>
+        </div>
+    </div>
+
+    <div id="screen3" class="screen">
+        <div class="instruction">Open the Envelope...</div>
+        
+        <div class="envelope-wrapper" id="envelopeWrapper">
+            <button class="hidden-btn" onclick="startApologySequence()">For You</button>
+
+            <div class="envelope">
+                <div class="letter">
+                    <p><strong>Dearest Everything,</strong></p>
+                    <br>
+                    <p style="font-size: 1rem;">
+                        I gave you a very tragic year, which I never meant to. 
+                        Surely this was an unforgivable mistake of mine. I never 
+                        wanted to approach you this year; it was planned only for 2030, 
+                        but I did it out of fear that I might never be able to get you.
+                        I needed to learn more so that I could give the best to you, but it ended up so bad for me and you as well. I just wanted to talk to you. You don’t need to believe me, but just hear me; I will not convince you to come back. It is your wish what to do. If you want to forgive me and accept my apologies.
+                    </p>
+                    <br>
+                    <p>Wishing you love,</p>
+                    <p><strong>Unwanted</strong></p>
+                </div>
+            </div>
+            <div class="heart" onclick="openEnvelope()">❤️</div>
+        </div>
+    </div>
+
+    <div id="screen4" class="screen">
+        </div>
+
+    <script>
+        // 1. Snow Logic
+        function createSnow() {
+            const snowflake = document.createElement('div');
+            snowflake.classList.add('snowflake');
+            snowflake.innerHTML = '❄';
+            snowflake.style.left = Math.random() * 100 + 'vw';
+            snowflake.style.animationDuration = Math.random() * 3 + 2 + 's';
+            snowflake.style.opacity = Math.random();
+            snowflake.style.fontSize = Math.random() * 20 + 10 + 'px';
+            document.body.appendChild(snowflake);
+            setTimeout(() => { snowflake.remove(); }, 5000);
+        }
+        setInterval(createSnow, 100);
+
+        // 2. Navigation Logic
+        function goToScreen(screenNumber) {
+            const current = document.querySelector('.screen.active');
+            if (current) {
+                current.classList.remove('active');
+            }
+            const next = document.getElementById('screen' + screenNumber);
+            if (next) {
+                next.classList.add('active');
+            }
+        }
+
+        function openEnvelope() {
+            document.getElementById('envelopeWrapper').classList.add('open');
+            document.querySelector('.instruction').style.opacity = '0';
+        }
+
+        // 3. Apology Logic
+        function startApologySequence() {
+            goToScreen(4);
+            const container = document.getElementById('screen4');
+            const maxCount = 100; // EXACTLY 100 TIMES
+            let count = 0;
+            
+            const interval = setInterval(() => {
+                const span = document.createElement('span');
+                span.innerText = "Sorry Sherin ";
+                span.classList.add('sorry-text');
+                
+                // Randomize look slightly
+                span.style.opacity = Math.random() * 0.5 + 0.4; 
+                
+                container.appendChild(span);
+                count++;
+
+                if(count >= maxCount) {
+                    clearInterval(interval);
+                    setTimeout(triggerHeartExplosion, 500);
+                }
+            }, 30); // Speed of printing (30ms)
+        }
+
+        function triggerHeartExplosion() {
+            const container = document.getElementById('screen4');
+            
+            // Clear text
+            container.innerHTML = '';
+            
+            // Create Heart Shape Particles
+            for (let i = 0; i < 60; i++) {
+                const t = (Math.PI * 2 * i) / 60;
+                // Heart math formula
+                const x = 16 * Math.pow(Math.sin(t), 3);
+                const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+                
+                createParticle(x * 12, y * 12);
+            }
+
+            // Show Message
+            setTimeout(() => {
+                const msg = document.createElement('div');
+                msg.classList.add('final-message');
+                msg.innerHTML = "My Sincere apologies, My Dream 😔";
+                container.appendChild(msg);
+                
+                setTimeout(() => { msg.style.opacity = 1; }, 100);
+            }, 1000);
+        }
+
+        function createParticle(tx, ty) {
+            const p = document.createElement('div');
+            p.classList.add('particle');
+            p.style.setProperty('--tx', tx + 'px');
+            p.style.setProperty('--ty', ty + 'px');
+            document.getElementById('screen4').appendChild(p);
+        }
+    </script>
+
+</body>
+</html>
